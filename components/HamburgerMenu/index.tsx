@@ -81,16 +81,6 @@ const HamburgerMenu = () => {
         )}
       </div>
 
-      {handleVerifyResponse && (
-        <div className="fixed top-20 right-4 bg-white p-4 rounded-lg shadow-lg z-20">
-          {verified ? (
-            <div className="text-green-600 font-medium">✓ Verified</div>
-          ) : (
-            <div className="text-red-600 font-medium">✗ Verification Failed</div>
-          )}
-          <button onClick={reset} className="mt-2 text-sm text-gray-500">Dismiss</button>
-        </div>
-      )}
     </>
   );
 };

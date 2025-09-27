@@ -36,12 +36,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-8 lg:p-12 bg-gray-50">
       <div className="w-full max-w-md mx-auto space-y-8 py-8">
-        <h1 className="text-2xl font-bold text-center mb-8">WLD 101</h1>
-
-        <section className="bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Payment</h2>
-          <PayBlock />
-        </section>
+        <h1 className="text-2xl font-bold text-center mb-8 text-black">WLD 101</h1>
       </div>
     </main>
   );
