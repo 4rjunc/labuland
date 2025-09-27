@@ -20,10 +20,11 @@ export async function POST(req: NextRequest) {
     action,
     signal
   )) as IVerifyResponse; // Wrapper on this
-  
+
   console.log(verifyRes);
 
   if (verifyRes.success) {
+    // TODO: store this in supabase fwIDKit
     // This is where you should perform backend actions if the verification succeeds
     // Such as, setting a user as "verified" in a database
     return NextResponse.json({ verifyRes, status: 200 });
