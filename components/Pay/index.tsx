@@ -88,6 +88,12 @@ export const PayBlock = () => {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // Photo capture states
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Camera functions
   const startCamera = async () => {
@@ -154,6 +160,87 @@ export const PayBlock = () => {
     setIsStreaming(false);
     setIsCameraOpen(false);
     setCameraError(null);
+    setCapturedPhoto(null);
+    setUploadStatus(null);
+  };
+
+  // Photo capture functions
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    
+    if (!context) return;
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw the video frame to canvas (mirrored)
+    context.save();
+    context.scale(-1, 1);
+    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+    context.restore();
+    
+    // Convert to data URL
+    const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    setCapturedPhoto(photoDataUrl);
+    console.log('Photo captured successfully');
+  };
+
+  const uploadToCloudinary = async (photoDataUrl: string) => {
+    try {
+      setIsUploading(true);
+      setUploadStatus('Uploading photo...');
+      
+      // Convert data URL to blob
+      const response = await fetch(photoDataUrl);
+      const blob = await response.blob();
+      
+      // Create FormData for Cloudinary upload
+      const formData = new FormData();
+      formData.append('file', blob, 'photo.jpg');
+      formData.append('upload_preset', 'your_upload_preset'); // Replace with your upload preset
+      formData.append('folder', 'camera-photos'); // Optional: organize in folder
+      
+      // Upload to Cloudinary
+      const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!uploadResponse.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await uploadResponse.json();
+      console.log('Upload successful:', result);
+      setUploadStatus(`Photo uploaded successfully! URL: ${result.secure_url}`);
+      
+      return result.secure_url;
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadStatus('Upload failed. Please try again.');
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCaptureAndUpload = async () => {
+    if (!capturedPhoto) {
+      capturePhoto();
+      return;
+    }
+    
+    try {
+      await uploadToCloudinary(capturedPhoto);
+    } catch (error) {
+      console.error('Capture and upload failed:', error);
+    }
   };
 
   const switchCamera = async () => {
@@ -247,6 +334,56 @@ export const PayBlock = () => {
                 <p className="text-red-600 text-sm text-center p-4">{cameraError}</p>
               </div>
             )}
+            
+            {/* Hidden canvas for photo capture */}
+            <canvas
+              ref={canvasRef}
+              style={{ display: 'none' }}
+            />
+            
+            {/* Capture button */}
+            {isStreaming && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                <Button
+                  onClick={handleCaptureAndUpload}
+                  disabled={isUploading}
+                  className="bg-white/90 hover:bg-white text-black px-6 py-2 rounded-full shadow-lg"
+                >
+                  {isUploading ? '⏳ Uploading...' : capturedPhoto ? '📤 Upload Photo' : '📸 Capture Photo'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Photo preview */}
+        {capturedPhoto && (
+          <div className="mt-4">
+            <h5 className="text-sm font-medium text-gray-700 mb-2">Captured Photo:</h5>
+            <div className="relative">
+              <img
+                src={capturedPhoto}
+                alt="Captured photo"
+                className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200"
+              />
+              <Button
+                onClick={() => setCapturedPhoto(null)}
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-full text-xs"
+              >
+                ✕
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Upload status */}
+        {uploadStatus && (
+          <div className={`mt-2 text-center text-sm ${
+            uploadStatus.includes('successfully') ? 'text-green-600' : 
+            uploadStatus.includes('failed') ? 'text-red-600' : 
+            'text-blue-600'
+          }`}>
+            {uploadStatus}
           </div>
         )}
       </div>
