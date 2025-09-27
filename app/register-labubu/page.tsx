@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function RegisterLabubuPage() {
-  const [ens, setEns] = useState("");
-  const [contractAddress, setContractAddress] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
 
@@ -23,7 +21,7 @@ export default function RegisterLabubuPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (contractAddress && uploadedPhotoUrl) {
+    if (uploadedPhotoUrl) {
       setSubmitted(true);
     }
   };
@@ -160,51 +158,9 @@ export default function RegisterLabubuPage() {
                   className="rounded-lg mb-4 w-full"
                 />
               )}
-              <div className="text-sm">
-                <p className="font-medium text-gray-600">Contract Address:</p>
-                <p className="text-gray-800 font-mono break-all">
-                  {contractAddress}
-                </p>
-              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="ens"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Your ENS
-                </label>
-                <input
-                  type="text"
-                  name="ens"
-                  id="ens"
-                  className="mt-1 block w-full px-3 py-2 text-black bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={ens}
-                  onChange={(e) => setEns(e.target.value)}
-                  placeholder="yourname.eth"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="contractAddress"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Contract Address
-                </label>
-                <input
-                  type="text"
-                  name="contractAddress"
-                  id="contractAddress"
-                  className="mt-1 block w-full px-3 py-2 text-black bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={contractAddress}
-                  onChange={(e) => setContractAddress(e.target.value)}
-                  placeholder="0x..."
-                  required
-                />
-              </div>
-
               {/* Camera Section */}
               <div className="w-full space-y-4">
                 <div className="flex items-center justify-between">

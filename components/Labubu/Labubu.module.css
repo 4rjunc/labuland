@@ -1,0 +1,25 @@
+.labubuContainer {
+  position: absolute;
+  animation: float 6s ease-in-out infinite;
+}
+
+.labubuImage {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.labubuContainer:hover .labubuImage {
+  transform: scale(1.1);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
