@@ -194,17 +194,47 @@ export const PayBlock = () => {
   const uploadToCloudinary = async (photoDataUrl: string) => {
     try {
       setIsUploading(true);
+      setUploadStatus('Getting user info...');
+      
+      // Get user information to include in filename
+      let userId = 'anonymous';
+      let username = 'user';
+      try {
+        const userResponse = await fetch('/api/auth/me');
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          if (userData.authenticated && userData.user?.id) {
+            userId = userData.user.id;
+            username = userData.user.username || 'user';
+            console.log('User info retrieved:', { id: userId, username: username });
+          }
+        }
+      } catch (error) {
+        console.log('Could not get user info, using anonymous:', error);
+      }
+      
       setUploadStatus('Uploading photo...');
       
       // Convert data URL to blob
       const response = await fetch(photoDataUrl);
       const blob = await response.blob();
       
+      // Create timestamp for unique filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `photo_${username}_${userId}_${timestamp}.jpg`;
+      
+      // Log the image data for debugging
+      console.log('Photo data URL:', photoDataUrl);
+      console.log('Blob size:', blob.size, 'bytes');
+      console.log('Blob type:', blob.type);
+      console.log('Generated filename:', filename);
+      
       // Create FormData for Cloudinary upload
       const formData = new FormData();
-      formData.append('file', blob, 'photo.jpg');
+      formData.append('file', blob, filename);
       formData.append('upload_preset', 'your_upload_preset'); // Replace with your upload preset
       formData.append('folder', 'camera-photos'); // Optional: organize in folder
+      formData.append('public_id', `photo_${username}_${userId}_${timestamp}`); // Set custom public ID
       
       // Upload to Cloudinary
       const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', {
@@ -218,7 +248,7 @@ export const PayBlock = () => {
       
       const result = await uploadResponse.json();
       console.log('Upload successful:', result);
-      setUploadStatus(`Photo uploaded successfully! URL: ${result.secure_url}`);
+      setUploadStatus(`Photo uploaded successfully! Filename: ${filename}`);
       
       return result.secure_url;
     } catch (error) {
