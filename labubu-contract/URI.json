@@ -1,0 +1,20 @@
+{
+    "name": "Labubu",
+    "description": "Labu Land",
+    "image": "https://ifmxiixehduhoqhsomwq.supabase.co/storage/v1/object/public/global/labubu.jpg",
+  "attributes": [
+    {
+      "trait_type": "Rarity",
+      "value": "Common"
+    },
+    {
+      "trait_type": "Color",
+      "value": "Blue"
+    },
+    {
+      "trait_type": "Level",
+      "value": 1
+    }
+  ]
+}
+
