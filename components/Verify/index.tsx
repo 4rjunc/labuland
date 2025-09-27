@@ -1,13 +1,15 @@
 "use client";
 import {
-  MiniKit,
   VerificationLevel,
-  ISuccessResult,
+  ISuccessResult as ISuccessResultFromKit,
   MiniAppVerifyActionErrorPayload,
-  IVerifyResponse,
+  IVerifyResponse as IVerifyResponseFromKit,
 } from "@worldcoin/minikit-js";
-import { useCallback, useState } from "react";
 import { Button } from "@worldcoin/mini-apps-ui-kit-react";
+import { useVerify } from "../hooks/useVerify";
+
+export type ISuccessResult = ISuccessResultFromKit;
+export type IVerifyResponse = IVerifyResponseFromKit;
 
 export type VerifyCommandInput = {
   action: string;
@@ -15,60 +17,14 @@ export type VerifyCommandInput = {
   verification_level?: VerificationLevel; // Default: Orb
 };
 
-const verifyPayload: VerifyCommandInput = {
-  action: "test-action-2", // This is your action ID from the Developer Portal
+export const verifyPayload: VerifyCommandInput = {
+  action: "labuland-pro", // This is your action ID from the Developer Portal
   signal: "",
-  verification_level: VerificationLevel.Orb, // Orb | Device
+  verification_level: VerificationLevel.Device, // Orb | Device
 };
 
 export const VerifyBlock = () => {
-  const [handleVerifyResponse, setHandleVerifyResponse] = useState<
-    MiniAppVerifyActionErrorPayload | IVerifyResponse | null
-  >(null);
-  const [verified, setVerified] = useState<boolean>(false);
-
-  const handleVerify = useCallback(async () => {
-    if (!MiniKit.isInstalled()) {
-      console.warn("Tried to invoke 'verify', but MiniKit is not installed.");
-      return;
-    }
-
-    const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
-
-    // no need to verify if command errored
-    if (finalPayload.status === "error") {
-      console.log("Command error");
-      console.log(finalPayload);
-
-      setHandleVerifyResponse(finalPayload);
-      return finalPayload;
-    }
-
-    // Verify the proof in the backend
-    const verifyResponse = await fetch(`/api/verify`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        payload: finalPayload as ISuccessResult, // Parses only the fields we need to verify
-        action: verifyPayload.action,
-        signal: verifyPayload.signal, // Optional
-      }),
-    });
-
-    // TODO: Handle Success!
-    const verifyResponseJson = await verifyResponse.json();
-
-    if (verifyResponseJson.status === 200) {
-      console.log("Verification success!");
-      console.log(finalPayload);
-      setVerified(true);
-    }
-
-    setHandleVerifyResponse(verifyResponseJson);
-    return verifyResponseJson;
-  }, []);
+  const { verified, handleVerifyResponse, handleVerify, reset } = useVerify();
 
   return (
     <div className="flex flex-col items-center">
@@ -96,7 +52,7 @@ export const VerifyBlock = () => {
             </>
           )}
           <Button
-            onClick={() => setHandleVerifyResponse(null)}
+            onClick={reset}
           >
             Try Again
           </Button>
