@@ -1,22 +1,30 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MiniKit } from "@worldcoin/minikit-js";
 import Labubu from "@/components/Labubu";
+import styles from "./Home.module.css";
 
-const labubus = [
-    { contractAddress: '0x123...', owner: 'owner1.eth', top: '10%', left: '15%', animationDelay: '0s' },
-    { contractAddress: '0x456...', owner: 'owner2.eth', top: '50%', left: '80%', animationDelay: '1.5s' },
-    { contractAddress: '0x789...', owner: 'owner3.eth', top: '70%', left: '60%', animationDelay: '3s' },
-    { contractAddress: '0xabc...', owner: 'owner4.eth', top: '25%', left: '60%', animationDelay: '4.5s' },
-    { contractAddress: '0xdef...', owner: 'owner5.eth', top: '80%', left: '45%', animationDelay: '5.5s' },
-    { contractAddress: '0x7829...', owner: 'owner6.eth', top: '60%', left: '10%', animationDelay: '3s' },
-    { contractAddress: '0xa34bc...', owner: 'owner7.eth', top: '25%', left: '30%', animationDelay: '4.5s' },
-    { contractAddress: '0xd12ef...', owner: 'owner8.eth', top: '50%', left: '45%', animationDelay: '5.5s' },
-
+const initialLabubus = [
+  { contractAddress: '0x123...', owner: 'owner1.eth', top: '10%', left: '15%', animationDelay: '0s', imageUrl: '/labubu.png' },
+  { contractAddress: '0x456...', owner: 'owner2.eth', top: '50%', left: '80%', animationDelay: '1.5s', imageUrl: '/labubu.png' },
+  { contractAddress: '0x789...', owner: 'owner3.eth', top: '70%', left: '10%', animationDelay: '3s', imageUrl: '/labubu.png' },
+  { contractAddress: '0xabc...', owner: 'owner4.eth', top: '25%', left: '60%', animationDelay: '4.5s', imageUrl: '/labubu.png' },
+  { contractAddress: '0xdef...', owner: 'owner5.eth', top: '80%', left: '45%', animationDelay: '5.5s', imageUrl: '/labubu.png' },
 ];
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [labubusData, setLabubusData] = useState(initialLabubus);
+
+  // Camera states
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Mating animation states
+  const [isMating, setIsMating] = useState(false);
+  const [matingPairIndices, setMatingPairIndices] = useState<[number, number] | null>(null);
+  const [showHeart, setShowHeart] = useState(false);
 
   useEffect(() => {
     const checkMiniKit = async () => {
@@ -27,8 +35,70 @@ export default function Home() {
         setTimeout(checkMiniKit, 500);
       }
     };
-
     checkMiniKit();
+  }, []);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+    setIsCameraOpen(false);
+  };
+
+  const handleMateClick = () => {
+    setIsCameraOpen(true);
+    startCamera();
+  };
+
+  const handleCaptureSuccess = () => {
+    stopCamera();
+    if (labubusData.length < 2) return;
+
+    const parent1Index = Math.floor(Math.random() * labubusData.length);
+    let parent2Index = Math.floor(Math.random() * labubusData.length);
+    while (parent1Index === parent2Index) {
+      parent2Index = Math.floor(Math.random() * labubusData.length);
+    }
+    setMatingPairIndices([parent1Index, parent2Index]);
+    setIsMating(true);
+
+    setTimeout(() => {
+      setShowHeart(true);
+      setTimeout(() => {
+        const newBaby = {
+          contractAddress: `0xnew...${Date.now().toString().slice(-4)}`,
+          owner: 'newborn.eth',
+          top: '50%',
+          left: '50%',
+          animationDelay: `${Math.random() * 5}s`,
+          imageUrl: '/baby.png',
+        };
+        setLabubusData(prev => [...prev, newBaby]);
+        setShowHeart(false);
+        setIsMating(false);
+        setMatingPairIndices(null);
+      }, 2000);
+    }, 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   if (isLoading) {
@@ -54,27 +124,79 @@ export default function Home() {
 
   return (
     <main 
-      className="relative flex min-h-screen flex-col items-center justify-between p-4 md:p-8 lg:p-12 overflow-hidden"
+      className="relative flex min-h-screen flex-col items-center justify-center p-4 md:p-8 lg:p-12 overflow-hidden"
       style={{
         backgroundImage: "url('/bg.webp')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      {labubus.map((labubu, index) => (
-        <Labubu
-          key={index}
-          contractAddress={labubu.contractAddress}
-          owner={labubu.owner}
-          style={{
+      {labubusData.map((labubu, index) => {
+        let style: React.CSSProperties = {
             top: labubu.top,
             left: labubu.left,
             animationDelay: labubu.animationDelay,
-          }}
-        />
-       ))}
-      <div className="w-full max-w-md mx-auto space-y-8 py-8 z-10">
+            transition: 'top 1.5s ease-in-out, left 1.5s ease-in-out',
+        };
+
+        if (isMating && matingPairIndices?.includes(index)) {
+            style.top = '50%';
+            style.left = '50%';
+            style.transform = 'translate(-50%, -50%)';
+        }
+
+        return (
+          <Labubu
+            key={index}
+            contractAddress={labubu.contractAddress}
+            owner={labubu.owner}
+            imageUrl={labubu.imageUrl}
+            style={style}
+          />
+        )
+       })}
+
+      {showHeart && (
+          <div className={styles.heart} style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              ❤️
+          </div>
+      )}
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
+        <button
+            onClick={handleMateClick}
+            className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105"
+        >
+            Mate
+        </button>
       </div>
+
+      {isCameraOpen && (
+        <div className={styles.cameraModal}>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full max-w-md rounded-lg border-2 border-gray-200"
+            style={{ transform: "scaleX(-1)" }}
+          />
+          <div className="flex gap-4">
+            <button
+                onClick={handleCaptureSuccess}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
+            >
+                Done
+            </button>
+            <button
+                onClick={stopCamera}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
+            >
+                Close
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
