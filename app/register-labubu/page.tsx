@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import MyNFTABI from './MyNFT.json';
+import { MiniKit } from '@worldcoin/minikit-js';
 
 export default function RegisterLabubuPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -18,6 +20,8 @@ export default function RegisterLabubuPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const NFT_CONTRACT_ADDRESS = "0x3e4aBDbbe9a4E5A00E759058115aDFBb46bC6c5F"
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +111,51 @@ export default function RegisterLabubuPage() {
   const uploadToCloudinary = async (photoDataUrl: string) => {
     setIsUploading(true);
     setUploadStatus("Uploading photo...");
+
+
+    const signMessagePayload = {
+      message: "Create Phygital for Labubu",
+    };
+
+    const { finalPayload } = await MiniKit.commandsAsync.signMessage(signMessagePayload);
+
+    // const SimpleABI = [
+    //   {
+    //     "inputs": [
+    //       {
+    //         "internalType": "address",
+    //         "name": "",
+    //         "type": "address"
+    //       }
+    //     ],
+    //     "name": "mintToken",
+    //     "outputs": [],
+    //     "stateMutability": "nonpayable",
+    //     "type": "function"
+    //   },
+    // ]
+    //
+    // await MiniKit.commandsAsync.sendTransaction({
+    //   transaction: [
+    //     {
+    //       address: '0x9Cf4F011F55Add3ECC1B1B497A3e9bd32183D6e8',
+    //       abi: SimpleABI,
+    //       functionName: 'mintToken',
+    //       args: ['0x126f7998Eb44Dd2d097A8AB2eBcb28dEA1646AC8'],
+    //     },
+    //   ],
+    // })
+
+    // await MiniKit.commandsAsync.sendTransaction({
+    //   transaction: [
+    //     {
+    //       address: NFT_CONTRACT_ADDRESS,
+    //       abi: MyNFTABI,
+    //       functionName: 'mint',
+    //       args: ['0x44c356ed352af71af6f70bd2912b075714d490b4'.toString(), 'https://ifmxiixehduhoqhsomwq.supabase.co/storage/v1/object/public/global/URI.json'.toString()],
+    //     },
+    //   ],
+    // });
 
     // Simulate an upload delay of 1.5 seconds
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -226,8 +275,8 @@ export default function RegisterLabubuPage() {
                           {isUploading
                             ? "⏳ Uploading..."
                             : capturedPhoto
-                            ? "📤 Upload Photo"
-                            : "📸 Capture Photo"}
+                              ? "📤 Upload Photo"
+                              : "📸 Capture Photo"}
                         </button>
                       </div>
                     )}
@@ -255,29 +304,28 @@ export default function RegisterLabubuPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {uploadedPhotoUrl && (
-                    <div className="mt-4">
-                        <h5 className="text-sm font-medium text-gray-700 mb-2">
-                        Uploaded Labubu:
-                        </h5>
-                        <img
-                        src={uploadedPhotoUrl}
-                        alt="Uploaded labubu"
-                        className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200"
-                        />
-                    </div>
+                  <div className="mt-4">
+                    <h5 className="text-sm font-medium text-gray-700 mb-2">
+                      Uploaded Labubu:
+                    </h5>
+                    <img
+                      src={uploadedPhotoUrl}
+                      alt="Uploaded labubu"
+                      className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200"
+                    />
+                  </div>
                 )}
 
                 {uploadStatus && (
                   <div
-                    className={`mt-2 text-center text-sm ${
-                      uploadStatus.includes("successfully")
-                        ? "text-green-600"
-                        : uploadStatus.includes("failed")
+                    className={`mt-2 text-center text-sm ${uploadStatus.includes("successfully")
+                      ? "text-green-600"
+                      : uploadStatus.includes("failed")
                         ? "text-red-600"
                         : "text-blue-600"
-                    }`}
+                      }`}
                   >
                     {uploadStatus}
                   </div>

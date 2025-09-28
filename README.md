@@ -1,3 +1,5 @@
+World Chain Mainnet Contract: [HERE](https://worldchain-mainnet.explorer.alchemy.com/address/0x3e4aBDbbe9a4E5A00E759058115aDFBb46bC6c5F)
+
 # WLD-101
 
 Welcome! 🎉
