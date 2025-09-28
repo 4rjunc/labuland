@@ -1,0 +1,21 @@
+.labubuContainer {
+  position: absolute;
+  animation: moveAround 20s ease-in-out infinite;
+}
+
+.labubuImage {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.labubuContainer:hover .labubuImage {
+  transform: scale(1.1);
+}
+
+@keyframes moveAround {
+  0% { transform: translate(0px, 0px) rotate(0deg); }
+  25% { transform: translate(20px, 40px) rotate(5deg); }
+  50% { transform: translate(-30px, -10px) rotate(-5deg); }
+  75% { transform: translate(10px, -30px) rotate(3deg); }
+  100% { transform: translate(0px, 0px) rotate(0deg); }
+}

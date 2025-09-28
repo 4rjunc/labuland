@@ -196,7 +196,6 @@ export const PayBlock = () => {
       setIsUploading(true);
       setUploadStatus('Getting user info...');
       
-      // Get user information to include in filename
       let userId = 'anonymous';
       let username = 'user';
       try {
@@ -208,9 +207,13 @@ export const PayBlock = () => {
             username = userData.user.username || 'user';
             console.log('User info retrieved:', { id: userId, username: username });
           }
+        } else if (userResponse.status === 401) {
+          console.log('User not authenticated, proceeding as anonymous.');
+        } else {
+           console.log('Could not get user info, proceeding as anonymous. Status:', userResponse.status);
         }
       } catch (error) {
-        console.log('Could not get user info, using anonymous:', error);
+        console.log('Could not get user info, proceeding as anonymous:', error);
       }
       
       setUploadStatus('Uploading photo...');
@@ -232,12 +235,12 @@ export const PayBlock = () => {
       // Create FormData for Cloudinary upload
       const formData = new FormData();
       formData.append('file', blob, filename);
-      formData.append('upload_preset', 'your_upload_preset'); // Replace with your upload preset
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'your_upload_preset');
       formData.append('folder', 'camera-photos'); // Optional: organize in folder
       formData.append('public_id', `photo_${username}_${userId}_${timestamp}`); // Set custom public ID
       
       // Upload to Cloudinary
-      const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload', {
+      const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
         method: 'POST',
         body: formData,
       });

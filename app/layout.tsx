@@ -5,6 +5,7 @@ import MiniKitProvider from "@/components/minikit-provider";
 import dynamic from "next/dynamic";
 import NextAuthProvider from "@/components/next-auth-provider";
 import "@worldcoin/mini-apps-ui-kit-react/styles.css";
+import HamburgerMenu from "@/components/HamburgerMenu";
 
 const sora = Sora({ subsets: ["latin"] });
 
@@ -38,7 +39,12 @@ export default function RootLayout({
         <NextAuthProvider>
           <ErudaProvider>
             <MiniKitProvider>
-              {children}
+              <div className="relative min-h-screen">
+                <div className="absolute top-4 right-4 z-50">
+                  <HamburgerMenu />
+                </div>
+                {children}
+              </div>
             </MiniKitProvider>
           </ErudaProvider>
         </NextAuthProvider>
