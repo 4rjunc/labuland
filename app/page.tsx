@@ -50,10 +50,11 @@ export default function Home() {
     }
   };
 
-  const stopCamera = () => {
+  const stopCamera = async () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
     }
+
     setIsCameraOpen(false);
   };
 
@@ -61,6 +62,17 @@ export default function Home() {
     setIsCameraOpen(true);
     startCamera();
   };
+
+  const signMessage = async () => {
+    const signMessagePayload = {
+      message: "Mate the Labubu",
+    };
+
+    const { finalPayload } = await MiniKit.commandsAsync.signMessage(signMessagePayload);
+
+
+    handleCaptureSuccess()
+  }
 
   const handleCaptureSuccess = () => {
     stopCamera();
@@ -82,7 +94,7 @@ export default function Home() {
           owner: 'newborn.eth',
           top: '50%',
           left: '50%',
-          animationDelay: `${Math.random() * 5}s`,
+          animationDelay: `${Math.random() * 1}s`,
           imageUrl: '/baby.png',
         };
         setLabubusData(prev => [...prev, newBaby]);
@@ -103,7 +115,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <main 
+      <main
         className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 lg:p-12"
         style={{
           backgroundImage: "url('/bg.webp')",
@@ -123,7 +135,7 @@ export default function Home() {
   }
 
   return (
-    <main 
+    <main
       className="relative flex min-h-screen flex-col items-center justify-center p-4 md:p-8 lg:p-12 overflow-hidden"
       style={{
         backgroundImage: "url('/bg.webp')",
@@ -133,16 +145,16 @@ export default function Home() {
     >
       {labubusData.map((labubu, index) => {
         let style: React.CSSProperties = {
-            top: labubu.top,
-            left: labubu.left,
-            animationDelay: labubu.animationDelay,
-            transition: 'top 1.5s ease-in-out, left 1.5s ease-in-out',
+          top: labubu.top,
+          left: labubu.left,
+          animationDelay: labubu.animationDelay,
+          transition: 'top 1.5s ease-in-out, left 1.5s ease-in-out',
         };
 
         if (isMating && matingPairIndices?.includes(index)) {
-            style.top = '50%';
-            style.left = '50%';
-            style.transform = 'translate(-50%, -50%)';
+          style.top = '50%';
+          style.left = '50%';
+          style.transform = 'translate(-50%, -50%)';
         }
 
         return (
@@ -154,20 +166,20 @@ export default function Home() {
             style={style}
           />
         )
-       })}
+      })}
 
       {showHeart && (
-          <div className={styles.heart} style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-              ❤️
-          </div>
+        <div className={styles.heart} style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          ❤️
+        </div>
       )}
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
         <button
-            onClick={handleMateClick}
-            className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105"
+          onClick={handleMateClick}
+          className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105"
         >
-            Mate
+          Mate
         </button>
       </div>
 
@@ -183,16 +195,18 @@ export default function Home() {
           />
           <div className="flex gap-4">
             <button
-                onClick={handleCaptureSuccess}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
+              onClick={() => {
+                signMessage()
+              }}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
             >
-                Done
+              Done
             </button>
             <button
-                onClick={stopCamera}
-                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
+              onClick={stopCamera}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
             >
-                Close
+              Close
             </button>
           </div>
         </div>
